@@ -4,6 +4,7 @@ import (
     "log"
     "net/http"
 
+    "github.com/rs/cors"
     "github.com/rs/rest-layer-mongo"
     "github.com/rs/rest-layer/resource"
     "github.com/rs/rest-layer/rest"
@@ -138,7 +139,7 @@ func main() {
     }
 
     // Bind the API under /api/ path
-    http.Handle("/api/", http.StripPrefix("/api/", api))
+    http.Handle("/api/", http.StripPrefix("/api/",cors.New(cors.Options{OptionsPassthrough: true}).Handler(api)))
 
     // Serve it
     log.Print("Serving API on http://localhost:8080")
