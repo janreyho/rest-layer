@@ -4,10 +4,11 @@ import (
     "log"
     "net/http"
 
-    "github.com/rs/rest-layer-mem"
+    "github.com/rs/rest-layer-mongo"
     "github.com/rs/rest-layer/resource"
     "github.com/rs/rest-layer/rest"
     "github.com/rs/rest-layer/schema"
+    "gopkg.in/mgo.v2"
 )
 
 var (
@@ -106,11 +107,16 @@ var (
 )
 
 func main() {
+    session, err := mgo.Dial("")
+    if err != nil {
+        log.Fatalf("Can't connect to MongoDB: %s", err)
+    }
+    db := "test_rest_layer_demo"
     // Create a REST API resource index
     index := resource.NewIndex()
 
     // Add a resource on /users[/:user_id]
-    users := index.Bind("users", user, mem.NewHandler(), resource.Conf{
+    users := index.Bind("users", user, mongo.NewHandler(session, db, "users"), resource.Conf{
         // We allow all REST methods
         // (rest.ReadWrite is a shortcut for []resource.Mode{resource.Create,
         //  resource.Read, resource.Update, resource.Delete, resource,List})
@@ -119,7 +125,7 @@ func main() {
 
     // Bind a sub resource on /users/:user_id/posts[/:post_id]
     // and reference the user on each post using the "user" field of the posts resource.
-    users.Bind("posts", "user", post, mem.NewHandler(), resource.Conf{
+    users.Bind("posts", "user", post, mongo.NewHandler(session, db, "posts"), resource.Conf{
         // Posts can only be read, created and deleted, not updated
         AllowedModes: []resource.Mode{resource.Read, resource.List,
              resource.Create, resource.Delete},
