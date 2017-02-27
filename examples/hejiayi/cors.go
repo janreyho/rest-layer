@@ -2,6 +2,7 @@ package main
 
 import (
     "net/http"
+    "github.com/rs/cors"
 )
 
 func main() {
@@ -14,6 +15,6 @@ func main() {
     // cors.Default() setup the middleware with default options being
     // all origins accepted with simple methods (GET, POST). See
     // documentation below for more options.
-
-    http.ListenAndServe(":8080",mux)
+    handler := cors.Default().Handler(mux)
+    http.ListenAndServe(":8080", handler)
 }
